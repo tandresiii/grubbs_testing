@@ -406,6 +406,13 @@ function renderTable(rows) {
       openDetail(tr.dataset.id);
     });
   });
+  wrap.querySelectorAll('[data-action="view"]').forEach((b) => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const tr = b.closest('tr');
+      if (tr) openDetail(tr.dataset.id);
+    });
+  });
   wrap.querySelectorAll('.btn-del').forEach((b) => {
     b.addEventListener('click', async (e) => {
       e.stopPropagation();
