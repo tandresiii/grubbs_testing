@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Infiniti Inbound Call Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0b0c; --bg-2: #131316; --surface: #1a1a1e; --surface-2: #22232a;
+    --line: #2a2b33; --line-2: #3a3b45;
+    --text: #ecebe6; --text-dim: #a5a49c; --text-muted: #6c6b65;
+    --accent: #c89b6e; --accent-2: #e2b98a;
+    --ok: #8fb573; --err: #d07a7a; --warn: #e8b765;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Manrope', sans-serif; min-height: 100vh; }
+  body {
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(200,155,110,0.08), transparent 60%),
+      radial-gradient(800px 600px at -10% 110%, rgba(200,155,110,0.04), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  h1,h2,h3,h4 { font-family: 'Fraunces', serif; font-weight: 400; letter-spacing: -0.01em; margin: 0; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .shell { max-width: 960px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  .brandbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 40px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--accent);
+    display: flex; align-items: center; justify-content: center; color: var(--accent);
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 18px;
+  }
+  .brand-name { font-family: 'Fraunces', serif; font-size: 17px; letter-spacing: 0.04em; }
+  .brand-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase; }
+
+  /* Start screen */
+  .hero { text-align: center; padding: 20px 0 10px; }
+  .kicker { color: var(--accent); letter-spacing: 0.28em; text-transform: uppercase; font-size: 11px; font-weight: 600; }
+  .hero h1 { font-size: clamp(40px, 6vw, 68px); line-height: 1.02; margin-top: 14px; font-weight: 300; }
+  .hero h1 em { font-style: italic; color: var(--accent-2); font-weight: 400; }
+  .hero p { color: var(--text-dim); max-width: 560px; margin: 18px auto 0; font-size: 15.5px; line-height: 1.6; }
+
+  .meta-grid { margin: 40px auto 28px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 700px; }
+  .meta { background: var(--surface); border: 1px solid var(--line); padding: 16px 16px 14px; border-radius: 2px; }
+  .meta .v { font-family: 'Fraunces', serif; font-size: 26px; margin-top: 6px; }
+  .meta .l { color: var(--text-muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.18em; }
+
+  .start-card {
+    max-width: 540px; margin: 30px auto 0; background: var(--surface);
+    border: 1px solid var(--line); padding: 32px; border-radius: 2px;
+  }
+  .field { display: block; margin-bottom: 18px; }
+  .field label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 8px; }
+  .field input {
+    width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line-2);
+    color: var(--text); padding: 10px 0; font-family: 'Fraunces', serif; font-size: 22px; outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--text-muted); font-style: italic; }
+  .field.code input { font-family: 'Manrope', sans-serif; font-size: 18px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; }
+
+  .rules { margin: 22px 0 10px; padding: 18px 20px; border-left: 2px solid var(--accent); background: rgba(200,155,110,0.04); font-size: 14px; color: var(--text-dim); line-height: 1.65; }
+  .rules strong { color: var(--text); font-weight: 500; }
+
+  .err-msg { margin: 14px 0 4px; color: var(--err); font-size: 13px; min-height: 18px; }
+
+  .btn-primary {
+    width: 100%; padding: 16px; background: var(--accent); color: #1a1208; border: none;
+    font-family: 'Manrope', sans-serif; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+    font-size: 12px; margin-top: 18px; transition: background 0.2s ease;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+  .btn-primary:disabled { background: var(--line-2); color: var(--text-muted); cursor: not-allowed; }
+
+  .btn-secondary {
+    padding: 12px 22px; background: transparent; color: var(--text); border: 1px solid var(--line-2);
+    font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; font-size: 11px;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn-secondary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Test screen */
+  .test-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 2px;
+    margin-bottom: 22px; gap: 14px; flex-wrap: wrap;
+  }
+  .test-bar .section-tag { color: var(--accent); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; }
+  .test-bar .who { font-size: 13px; color: var(--text-dim); }
+  .test-bar .who strong { color: var(--text); font-weight: 500; }
+  .timer { font-family: 'Fraunces', serif; font-size: 28px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+  .timer.warn { color: var(--warn); }
+  .timer.danger { color: var(--err); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+  .qprogress { display: flex; gap: 4px; margin-bottom: 26px; }
+  .qseg { flex: 1; height: 3px; background: var(--line); position: relative; overflow: hidden; cursor: pointer; }
+  .qseg.done { background: var(--accent); }
+  .qseg.current { background: var(--accent-2); box-shadow: 0 0 6px rgba(226,185,138,0.45); }
+  .qseg.flagged::after { content: ''; position: absolute; top: -4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: var(--warn); border-radius: 50%; }
+
+  .qcard { background: var(--surface); border: 1px solid var(--line); padding: 40px 42px; border-radius: 2px; }
+  .qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; padding-bottom: 14px; margin-bottom: 22px; border-bottom: 1px solid var(--line); }
+  .qnum { font-family: 'Fraunces', serif; font-size: 15px; color: var(--text-muted); font-style: italic; }
+  .qflag { background: transparent; border: 1px solid var(--line-2); color: var(--text-dim); padding: 6px 12px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; transition: all 0.2s ease; }
+  .qflag:hover, .qflag.active { border-color: var(--warn); color: var(--warn); }
+
+  .qtext { font-family: 'Fraunces', serif; font-size: 22px; line-height: 1.4; margin-bottom: 26px; font-weight: 400; }
+
+  .opts { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex; gap: 16px; align-items: flex-start; padding: 16px 20px;
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: 2px;
+    cursor: pointer; transition: all 0.15s ease; font-size: 15px; line-height: 1.5;
+  }
+  .opt:hover { border-color: var(--line-2); background: var(--surface-2); }
+  .opt.selected { border-color: var(--accent); background: rgba(200,155,110,0.06); }
+  .opt-letter {
+    flex: 0 0 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line-2);
+    display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif;
+    font-size: 13px; color: var(--text-dim); margin-top: -2px; transition: all 0.15s ease;
+  }
+  .opt.selected .opt-letter { background: var(--accent); color: #1a1208; border-color: var(--accent); }
+  .opt-text { flex: 1; }
+
+  .qfoot { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; gap: 12px; }
+  .qfoot .middle { color: var(--text-muted); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+
+  .submit-bar { margin-top: 20px; padding: 18px 20px; border: 1px dashed var(--line-2); display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .submit-bar .txt { font-size: 13px; color: var(--text-dim); }
+
+  /* Results */
+  .results-hero { text-align: center; padding: 10px 0 30px; border-bottom: 1px solid var(--line); margin-bottom: 36px; }
+  .score-big { font-family: 'Fraunces', serif; font-size: clamp(72px, 12vw, 130px); line-height: 1; font-weight: 300; letter-spacing: -0.02em; }
+  .score-big .slash { color: var(--text-muted); margin: 0 8px; }
+  .score-big .denom { color: var(--text-muted); font-size: 0.55em; }
+  .verdict { font-family: 'Fraunces', serif; font-style: italic; font-size: 22px; color: var(--accent-2); margin-top: 12px; }
+  .verdict-sub { color: var(--text-dim); margin-top: 6px; font-size: 14px; }
+  .save-status { margin-top: 14px; font-size: 11.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
+  .save-status.saved { color: var(--ok); }
+  .save-status.failed { color: var(--err); }
+
+  .breakdown { display: grid; gap: 14px; margin-bottom: 36px; }
+  .bd-row { display: grid; grid-template-columns: 220px 1fr 90px; gap: 18px; align-items: center; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 2px; }
+  .bd-name { font-family: 'Fraunces', serif; font-size: 16px; }
+  .bd-bar { height: 6px; background: var(--line); position: relative; overflow: hidden; }
+  .bd-bar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); transition: width 0.6s ease; }
+  .bd-bar .fill.low { background: var(--err); }
+  .bd-bar .fill.mid { background: var(--warn); }
+  .bd-num { text-align: right; font-family: 'Fraunces', serif; font-size: 16px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .bd-num strong { color: var(--text); font-weight: 500; }
+
+  .review-block { margin-top: 10px; }
+  .review-q { padding: 20px 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 2px; margin-bottom: 12px; }
+  .review-q .tag { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+  .review-q .tag.correct { color: var(--ok); }
+  .review-q .tag.wrong { color: var(--err); }
+  .review-q .tag.unanswered { color: var(--warn); }
+  .review-q h4 { font-family: 'Fraunces', serif; font-size: 17px; margin: 8px 0 14px; font-weight: 400; line-height: 1.35; }
+  .review-opts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .review-opt { padding: 10px 14px; border: 1px solid var(--line); background: var(--bg-2); font-size: 13.5px; line-height: 1.45; display: flex; gap: 12px; align-items: flex-start; }
+  .review-opt.correct { border-color: var(--ok); background: rgba(143,181,115,0.06); }
+  .review-opt.chosen-wrong { border-color: var(--err); background: rgba(208,122,122,0.06); }
+  .review-opt .ltr { font-family: 'Fraunces', serif; color: var(--text-muted); font-size: 12px; margin-top: 2px; min-width: 16px; }
+  .review-opt.correct .ltr { color: var(--ok); }
+  .review-opt.chosen-wrong .ltr { color: var(--err); }
+  .explain { margin-top: 6px; padding: 12px 14px; background: rgba(200,155,110,0.05); border-left: 2px solid var(--accent); font-size: 13.5px; color: var(--text-dim); line-height: 1.55; }
+  .explain strong { color: var(--text); font-weight: 500; }
+
+  .section-head { margin: 30px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; }
+  .section-head h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; font-style: italic; }
+  .section-head .uppercase-label { text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.2em; color: var(--text-dim); font-weight: 500; }
+
+  .final-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal { background: var(--surface); border: 1px solid var(--line-2); padding: 28px 30px; max-width: 440px; width: 100%; border-radius: 2px; }
+  .modal h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; margin-bottom: 10px; }
+  .modal p { color: var(--text-dim); font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .hidden { display: none !important; }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line-2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 720px) {
+    .meta-grid { grid-template-columns: repeat(2,1fr); }
+    .qcard { padding: 26px 22px; }
+    .qtext { font-size: 19px; }
+    .bd-row { grid-template-columns: 1fr; gap: 8px; }
+    .bd-num { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="brandbar">
+    <div class="brand">
+      <div class="brand-mark">∞</div>
+      <div>
+        <div class="brand-name">Inbound Call Assessment</div>
+        <div class="brand-sub">Sales Phone Skills · Infiniti</div>
+      </div>
+    </div>
+    <div class="brand-sub" id="statusLabel">Ready</div>
+  </div>
+
+  <!-- ================= START SCREEN ================= -->
+  <section id="view-start">
+    <div class="hero">
+      <div class="kicker">Timed · 25 Minutes · 40 Questions</div>
+      <h1>How well does your phone <em>actually</em> perform?</h1>
+      <p>This assessment measures what matters on an inbound sales call: etiquette, product fluency, lead qualification, and the ability to handle objections without losing the appointment.</p>
+    </div>
+
+    <div class="meta-grid">
+      <div class="meta"><div class="l">Questions</div><div class="v">40</div></div>
+      <div class="meta"><div class="l">Time Limit</div><div class="v">25:00</div></div>
+      <div class="meta"><div class="l">Sections</div><div class="v">4</div></div>
+      <div class="meta"><div class="l">Passing</div><div class="v">75%</div></div>
+    </div>
+
+    <div class="start-card">
+      <div class="field code">
+        <label>Access Code</label>
+        <input type="text" id="inputCode" placeholder="from your manager" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Candidate Name</label>
+        <input type="text" id="inputName" placeholder="First Last" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Employee ID / Date</label>
+        <input type="text" id="inputId" placeholder="Optional — e.g. #4821" autocomplete="off" />
+      </div>
+
+      <div class="rules">
+        <strong>Before you begin:</strong><br>
+        The timer starts when you click below and does not pause. You may skip and return to questions within the time window. If time expires, the test submits automatically with your current answers. Do not refresh the page.
+      </div>
+
+      <div class="err-msg" id="startErr"></div>
+      <button class="btn-primary" id="btnStart" disabled>Begin Assessment</button>
+    </div>
+  </section>
+
+  <!-- ================= TEST SCREEN ================= -->
+  <section id="view-test" class="hidden">
+    <div class="test-bar">
+      <div>
+        <div class="section-tag" id="sectionTag">Section I</div>
+        <div class="who"><strong id="whoName">Candidate</strong> <span id="whoId"></span></div>
+      </div>
+      <div class="timer" id="timer">25:00</div>
+    </div>
+
+    <div class="qprogress" id="qprogress"></div>
+
+    <div class="qcard">
+      <div class="qhead">
+        <div class="qnum" id="qnum">Question 1 of 40</div>
+        <button class="qflag" id="btnFlag">Flag for review</button>
+      </div>
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="qopts"></div>
+      <div class="qfoot">
+        <button class="btn-secondary" id="btnPrev">‹ Previous</button>
+        <div class="middle" id="qmiddle">— —</div>
+        <button class="btn-secondary" id="btnNext">Next ›</button>
+      </div>
+    </div>
+
+    <div class="submit-bar">
+      <div class="txt">Answered <strong id="answeredCount">0</strong> of 40 · <span id="flaggedCount">0</span> flagged</div>
+      <button class="btn-secondary" id="btnSubmit">Submit Assessment</button>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS SCREEN ================= -->
+  <section id="view-results" class="hidden">
+    <div class="results-hero">
+      <div class="kicker" id="candidateLine">Candidate · —</div>
+      <div class="score-big" id="scoreBig">
+        <span id="scoreCorrect">0</span><span class="slash">/</span><span class="denom" id="scoreTotal">40</span>
+      </div>
+      <div class="verdict" id="verdictText">—</div>
+      <div class="verdict-sub" id="verdictSub">—</div>
+      <div class="save-status" id="saveStatus"><span class="spinner"></span>Saving your results…</div>
+    </div>
+
+    <h3 style="font-family: Fraunces, serif; font-weight: 400; font-size: 22px; margin-bottom: 14px; font-style: italic;">Section breakdown</h3>
+    <div class="breakdown" id="breakdown"></div>
+
+    <div class="final-actions">
+      <button class="btn-secondary" id="btnToggleReview">Show full review</button>
+      <button class="btn-secondary" id="btnPrint">Print / Save PDF</button>
+    </div>
+
+    <div id="reviewWrap" class="hidden review-block"></div>
+  </section>
+
+</div>
+
+<!-- Submit confirm modal -->
+<div class="modal-overlay hidden" id="confirmSubmit">
+  <div class="modal">
+    <h3>Submit your assessment?</h3>
+    <p id="confirmSubmitText">You have unanswered questions. Unanswered questions are scored as incorrect.</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="confirmCancel">Keep working</button>
+      <button class="btn-primary" style="width: auto; margin: 0; padding: 12px 22px;" id="confirmGo">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Time expired modal -->
+<div class="modal-overlay hidden" id="timeExpired">
+  <div class="modal">
+    <h3>Time's up.</h3>
+    <p>The 25-minute window has ended. Your current answers are being submitted.</p>
+    <div class="modal-actions">
+      <button class="btn-primary" style="width: auto; margin: 0; padding: 12px 22px;" id="timeExpiredGo">See results</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   STATE — questions come from the server after the access code is
+   validated. `results` is populated by the server on submit.
+   ===================================================================== */
+const TOTAL_SECONDS_DEFAULT = 25 * 60;
+let state = {
+  view: 'start',
+  questions: null,     // set after /api/test/start
+  sections: null,
+  totalSeconds: TOTAL_SECONDS_DEFAULT,
+  name: '',
+  id: '',
+  currentIdx: 0,
+  answers: [],
+  flagged: [],
+  startedAt: null,
+  timeLeft: TOTAL_SECONDS_DEFAULT,
+  timerHandle: null,
+  finishedAt: null,
+  results: null,       // scored data from server after /api/test/submit
+};
+
+/* ----- helpers ----- */
+const $ = (id) => document.getElementById(id);
+const fmtTime = (s) => { const m = Math.floor(s/60), sec = s % 60; return `${m}:${sec.toString().padStart(2,'0')}`; };
+const letterFor = (i) => ['A','B','C','D','E'][i];
+
+function show(viewId) {
+  ['view-start','view-test','view-results'].forEach(v => $(v).classList.toggle('hidden', v !== viewId));
+  state.view = viewId.replace('view-','');
+  $('statusLabel').textContent = state.view==='start' ? 'Ready' : state.view==='test' ? 'In Progress' : 'Complete';
+}
+
+/* =====================================================================
+   START SCREEN — enable button when all required fields are filled
+   ===================================================================== */
+function validateStartForm() {
+  const code = $('inputCode').value.trim();
+  const name = $('inputName').value.trim();
+  $('btnStart').disabled = !(code.length > 0 && name.length >= 2);
+}
+$('inputCode').addEventListener('input', validateStartForm);
+$('inputName').addEventListener('input', validateStartForm);
+$('inputId').addEventListener('input', () => {});
+
+$('btnStart').addEventListener('click', async () => {
+  const btn = $('btnStart');
+  const err = $('startErr');
+  err.textContent = '';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Loading…';
+
+  try {
+    const res = await fetch('/api/test/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        accessCode: $('inputCode').value.trim(),
+        name: $('inputName').value.trim(),
+        candidateId: $('inputId').value.trim(),
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error || 'Unable to start test'; btn.disabled = false; btn.textContent = 'Begin Assessment'; return; }
+
+    state.questions = data.questions;
+    state.sections = data.sections;
+    state.totalSeconds = data.totalSeconds || TOTAL_SECONDS_DEFAULT;
+    state.name = $('inputName').value.trim();
+    state.id = $('inputId').value.trim();
+    state.answers = new Array(data.questions.length).fill(null);
+    state.flagged = new Array(data.questions.length).fill(false);
+    state.timeLeft = state.totalSeconds;
+    startTest();
+  } catch (e) {
+    err.textContent = 'Network error — please try again.';
+    btn.disabled = false;
+    btn.textContent = 'Begin Assessment';
+  }
+});
+
+/* =====================================================================
+   TEST SCREEN
+   ===================================================================== */
+function startTest() {
+  state.startedAt = new Date();
+  $('whoName').textContent = state.name;
+  $('whoId').textContent = state.id ? ` · ${state.id}` : '';
+  buildProgress();
+  renderQuestion();
+  show('view-test');
+
+  if (state.timerHandle) clearInterval(state.timerHandle);
+  state.timerHandle = setInterval(() => {
+    state.timeLeft--;
+    updateTimer();
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerHandle);
+      finishTest(true);
+    }
+  }, 1000);
+  updateTimer();
+}
+
+function updateTimer() {
+  const el = $('timer');
+  el.textContent = fmtTime(Math.max(0, state.timeLeft));
+  el.classList.toggle('warn', state.timeLeft <= 300 && state.timeLeft > 60);
+  el.classList.toggle('danger', state.timeLeft <= 60);
+}
+
+function buildProgress() {
+  const wrap = $('qprogress'); wrap.innerHTML = '';
+  state.questions.forEach((q, i) => {
+    const seg = document.createElement('div');
+    seg.className = 'qseg';
+    seg.title = `Q${i+1} · Section ${q.s}`;
+    seg.addEventListener('click', () => { state.currentIdx = i; renderQuestion(); });
+    wrap.appendChild(seg);
+  });
+}
+function refreshProgress() {
+  Array.from($('qprogress').children).forEach((seg, i) => {
+    seg.classList.toggle('done', state.answers[i] !== null);
+    seg.classList.toggle('current', i === state.currentIdx);
+    seg.classList.toggle('flagged', state.flagged[i]);
+  });
+}
+
+function renderQuestion() {
+  const i = state.currentIdx;
+  const q = state.questions[i];
+  const sectionMeta = state.sections.find((s) => s.key === q.s);
+  const sectionNum = ['A','B','C','D'].indexOf(q.s) + 1;
+
+  $('sectionTag').textContent = `Section ${['I','II','III','IV'][sectionNum-1]} · ${sectionMeta.name}`;
+  $('qnum').textContent = `Question ${i+1} of ${state.questions.length}`;
+  $('qtext').textContent = q.q;
+
+  const optsWrap = $('qopts'); optsWrap.innerHTML = '';
+  q.a.forEach((text, idx) => {
+    const row = document.createElement('div');
+    row.className = 'opt' + (state.answers[i] === idx ? ' selected' : '');
+    row.innerHTML = `<div class="opt-letter">${letterFor(idx)}</div><div class="opt-text"></div>`;
+    row.querySelector('.opt-text').textContent = text;
+    row.addEventListener('click', () => {
+      state.answers[i] = idx;
+      renderQuestion();
+      refreshProgress();
+      updateCounts();
+    });
+    optsWrap.appendChild(row);
+  });
+
+  $('btnPrev').disabled = i === 0;
+  $('btnNext').disabled = i === state.questions.length - 1;
+  $('qmiddle').textContent = `Section ${q.s} · ${sectionMeta.name}`;
+
+  const flag = $('btnFlag');
+  flag.classList.toggle('active', state.flagged[i]);
+  flag.textContent = state.flagged[i] ? 'Flagged ●' : 'Flag for review';
+
+  refreshProgress();
+  updateCounts();
+}
+
+$('btnPrev').addEventListener('click', () => { if (state.currentIdx > 0) { state.currentIdx--; renderQuestion(); } });
+$('btnNext').addEventListener('click', () => { if (state.currentIdx < state.questions.length - 1) { state.currentIdx++; renderQuestion(); } });
+$('btnFlag').addEventListener('click', () => { state.flagged[state.currentIdx] = !state.flagged[state.currentIdx]; renderQuestion(); });
+
+function updateCounts() {
+  $('answeredCount').textContent = state.answers.filter((a) => a !== null).length;
+  $('flaggedCount').textContent = state.flagged.filter(Boolean).length;
+}
+
+// Keyboard shortcuts during test
+document.addEventListener('keydown', (e) => {
+  if (state.view !== 'test') return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const i = state.currentIdx;
+  const q = state.questions[i];
+  if (['1','2','3','4','5'].includes(e.key)) {
+    const idx = parseInt(e.key, 10) - 1;
+    if (idx < q.a.length) { state.answers[i] = idx; renderQuestion(); }
+  } else if (e.key === 'ArrowRight') {
+    if (state.currentIdx < state.questions.length - 1) { state.currentIdx++; renderQuestion(); }
+  } else if (e.key === 'ArrowLeft') {
+    if (state.currentIdx > 0) { state.currentIdx--; renderQuestion(); }
+  } else if (e.key.toLowerCase() === 'f') {
+    state.flagged[i] = !state.flagged[i]; renderQuestion();
+  }
+});
+
+$('btnSubmit').addEventListener('click', () => {
+  const unanswered = state.answers.filter((a) => a === null).length;
+  $('confirmSubmitText').textContent = unanswered
+    ? `You have ${unanswered} unanswered question${unanswered>1?'s':''}. Unanswered questions score as incorrect.`
+    : `You've answered all ${state.questions.length} questions. Submit your assessment?`;
+  $('confirmSubmit').classList.remove('hidden');
+});
+$('confirmCancel').addEventListener('click', () => $('confirmSubmit').classList.add('hidden'));
+$('confirmGo').addEventListener('click', () => { $('confirmSubmit').classList.add('hidden'); finishTest(false); });
+$('timeExpiredGo').addEventListener('click', () => $('timeExpired').classList.add('hidden'));
+
+/* =====================================================================
+   SUBMIT + RESULTS — server scores and persists, we render from response
+   ===================================================================== */
+async function finishTest(timeout) {
+  if (state.timerHandle) { clearInterval(state.timerHandle); state.timerHandle = null; }
+  state.finishedAt = new Date();
+  if (timeout) $('timeExpired').classList.remove('hidden');
+
+  // Render a placeholder results view while we wait for the server.
+  show('view-results');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  $('saveStatus').className = 'save-status';
+  $('saveStatus').innerHTML = '<span class="spinner"></span>Saving your results…';
+
+  const durationSeconds = state.totalSeconds - state.timeLeft;
+
+  try {
+    const res = await fetch('/api/test/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({
+        answers: state.answers,
+        flagged: state.flagged.map((f, i) => f ? i : null).filter((x) => x !== null),
+        durationSeconds,
+        timeExpired: !!timeout,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Submit failed');
+    state.results = data;
+    $('saveStatus').classList.add('saved');
+    $('saveStatus').textContent = `✓ Saved · Submission #${data.id}`;
+    renderResults();
+  } catch (e) {
+    $('saveStatus').classList.add('failed');
+    $('saveStatus').textContent = `✗ Could not save results — please take a screenshot and notify your manager.`;
+    // Still render something based on local data so the user isn't staring at nothing.
+    $('scoreCorrect').textContent = '—';
+    $('verdictText').textContent = 'Submission failed.';
+    $('verdictSub').textContent = 'Your answers could not be saved. Please let your manager know.';
+  }
+}
+
+function renderResults() {
+  const r = state.results;
+  $('candidateLine').textContent = `Candidate · ${r.candidateName}${r.candidateId ? ' · ' + r.candidateId : ''}`;
+  $('scoreCorrect').textContent = r.correctCount;
+  $('scoreTotal').textContent = r.totalQuestions;
+
+  const pct = r.correctCount / r.totalQuestions;
+  let verdict, sub;
+  if (pct >= 0.9)      { verdict = 'Elite phone performance.'; sub = 'Excellent product fluency, process, and objection handling. This is a rep who should be taking more inbound calls.'; }
+  else if (pct >= 0.8) { verdict = 'Strong phone skills.'; sub = 'Consistent fundamentals with room to tighten one or two sections below.'; }
+  else if (pct >= 0.7) { verdict = 'Competent, with specific gaps.'; sub = 'Review the sections below — targeted coaching on the weaker area will move this rep into strong territory quickly.'; }
+  else if (pct >= 0.5) { verdict = 'Significant coaching needed.'; sub = 'Multiple foundational gaps. Pair with a senior rep and re-assess in 30 days.'; }
+  else                 { verdict = 'Not yet ready for inbound calls.'; sub = 'Before taking more calls, this rep needs structured training on phone process, product, and objections.'; }
+  $('verdictText').textContent = verdict;
+  $('verdictSub').textContent = sub;
+
+  // Breakdown
+  const bdWrap = $('breakdown'); bdWrap.innerHTML = '';
+  state.sections.forEach((sec) => {
+    const sc = r.sectionScores[sec.key] || { correct: 0, total: 0 };
+    const p = sc.total ? sc.correct / sc.total : 0;
+    const cls = p >= 0.8 ? '' : p >= 0.6 ? 'mid' : 'low';
+    const row = document.createElement('div');
+    row.className = 'bd-row';
+    row.innerHTML = `
+      <div class="bd-name"></div>
+      <div class="bd-bar"><div class="fill ${cls}" style="width:${Math.round(p*100)}%"></div></div>
+      <div class="bd-num"><strong>${sc.correct}</strong>/${sc.total}</div>`;
+    row.querySelector('.bd-name').textContent = sec.name;
+    bdWrap.appendChild(row);
+  });
+
+  // Review
+  const wrap = $('reviewWrap'); wrap.innerHTML = '';
+  state.sections.forEach((sec) => {
+    const inSection = r.scored.filter((q) => q.section === sec.key);
+    const correctCt = inSection.filter((q) => q.isCorrect).length;
+    const head = document.createElement('div');
+    head.className = 'section-head';
+    head.innerHTML = `<h3></h3><div class="uppercase-label">${correctCt}/${inSection.length} correct</div>`;
+    head.querySelector('h3').textContent = sec.name;
+    wrap.appendChild(head);
+
+    inSection.forEach((q) => {
+      const tagClass = q.isCorrect ? 'correct' : q.answered === null ? 'unanswered' : 'wrong';
+      const tagText = q.isCorrect ? '✓ Correct' : q.answered === null ? '— Unanswered' : '✗ Incorrect';
+      let optsHtml = '';
+      q.options.forEach((text, idx) => {
+        let cls = '';
+        if (idx === q.correct) cls = 'correct';
+        else if (idx === q.answered && q.answered !== q.correct) cls = 'chosen-wrong';
+        const suffix = idx === q.answered
+          ? '<span style="color:var(--text-muted);font-size:11px;"> · your answer</span>'
+          : (idx === q.correct ? '<span style="color:var(--ok);font-size:11px;"> · correct answer</span>' : '');
+        // Escape user-visible text by writing via DOM, but we're building HTML
+        // with trusted static content from our own server, so template is OK.
+        optsHtml += `<div class="review-opt ${cls}"><div class="ltr">${letterFor(idx)}</div><div>${escapeHtml(text)}${suffix}</div></div>`;
+      });
+      const block = document.createElement('div');
+      block.className = 'review-q';
+      block.innerHTML = `
+        <div class="tag ${tagClass}">Q${q.idx+1} · Section ${q.section} · ${tagText}</div>
+        <h4></h4>
+        <div class="review-opts">${optsHtml}</div>
+        <div class="explain"><strong>Why:</strong> ${escapeHtml(q.why)}</div>`;
+      block.querySelector('h4').textContent = q.question;
+      wrap.appendChild(block);
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+$('btnToggleReview').addEventListener('click', () => {
+  const w = $('reviewWrap');
+  const open = !w.classList.contains('hidden');
+  w.classList.toggle('hidden');
+  $('btnToggleReview').textContent = open ? 'Show full review' : 'Hide full review';
+  if (!open) w.scrollIntoView({ behavior: 'smooth' });
+});
+$('btnPrint').addEventListener('click', () => {
+  $('reviewWrap').classList.remove('hidden');
+  $('btnToggleReview').textContent = 'Hide full review';
+  window.print();
+});
+</script>
+</body>
+</html>
