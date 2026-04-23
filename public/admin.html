@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin · Infiniti Call Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0b0c; --bg-2: #131316; --surface: #1a1a1e; --surface-2: #22232a;
+    --line: #2a2b33; --line-2: #3a3b45;
+    --text: #ecebe6; --text-dim: #a5a49c; --text-muted: #6c6b65;
+    --accent: #c89b6e; --accent-2: #e2b98a;
+    --ok: #8fb573; --err: #d07a7a; --warn: #e8b765;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Manrope', sans-serif; min-height: 100vh; }
+  body {
+    background: radial-gradient(900px 500px at 85% -10%, rgba(200,155,110,0.06), transparent 60%), var(--bg);
+    background-attachment: fixed;
+  }
+  h1,h2,h3,h4 { font-family: 'Fraunces', serif; font-weight: 400; letter-spacing: -0.01em; margin: 0; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .shell { max-width: 1200px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  .brandbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 32px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--accent);
+    display: flex; align-items: center; justify-content: center; color: var(--accent);
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 18px;
+  }
+  .brand-name { font-family: 'Fraunces', serif; font-size: 17px; letter-spacing: 0.04em; }
+  .brand-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase; }
+
+  /* Login */
+  .login-wrap { max-width: 420px; margin: 60px auto; background: var(--surface); border: 1px solid var(--line); padding: 40px; border-radius: 2px; }
+  .login-wrap h1 { font-size: 30px; font-weight: 300; margin-bottom: 8px; font-style: italic; color: var(--accent-2); }
+  .login-wrap p { color: var(--text-dim); font-size: 14px; margin-bottom: 22px; line-height: 1.5; }
+  .field { display: block; margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 8px; }
+  .field input {
+    width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line-2);
+    color: var(--text); padding: 10px 0; font-family: 'Fraunces', serif; font-size: 20px; outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  .err-msg { color: var(--err); font-size: 13px; min-height: 18px; margin: 10px 0 4px; }
+
+  .btn-primary {
+    padding: 14px 26px; background: var(--accent); color: #1a1208; border: none;
+    font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; font-size: 11.5px;
+    transition: background 0.2s ease;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+  .btn-primary:disabled { background: var(--line-2); color: var(--text-muted); cursor: not-allowed; }
+  .btn-primary.full { width: 100%; margin-top: 10px; padding: 16px; font-size: 12px; }
+
+  .btn-secondary {
+    padding: 10px 18px; background: transparent; color: var(--text); border: 1px solid var(--line-2);
+    font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; font-size: 11px;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn-secondary.danger:hover { border-color: var(--err); color: var(--err); }
+
+  /* Dashboard */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); padding: 18px 20px; border-radius: 2px; }
+  .stat .l { color: var(--text-muted); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.2em; }
+  .stat .v { font-family: 'Fraunces', serif; font-size: 34px; margin-top: 8px; font-weight: 300; }
+  .stat .v small { font-size: 15px; color: var(--text-muted); margin-left: 4px; }
+
+  .toolbar {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; margin-bottom: 16px; border-radius: 2px;
+  }
+  .toolbar .search { flex: 1; min-width: 220px; }
+  .toolbar input {
+    width: 100%; background: var(--bg-2); border: 1px solid var(--line); color: var(--text);
+    padding: 10px 12px; font-family: 'Manrope', sans-serif; font-size: 14px; outline: none;
+    border-radius: 2px; transition: border-color 0.15s ease;
+  }
+  .toolbar input:focus { border-color: var(--accent); }
+  .toolbar select {
+    background: var(--bg-2); border: 1px solid var(--line); color: var(--text);
+    padding: 10px 12px; font-family: 'Manrope', sans-serif; font-size: 13px; border-radius: 2px;
+  }
+
+  table.assess { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+  table.assess th, table.assess td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  table.assess th { background: var(--bg-2); color: var(--text-dim); font-weight: 500; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.18em; }
+  table.assess tbody tr { cursor: pointer; transition: background 0.12s ease; }
+  table.assess tbody tr:hover { background: var(--surface-2); }
+  table.assess tr:last-child td { border-bottom: none; }
+  .name-cell .name { font-family: 'Fraunces', serif; font-size: 16px; }
+  .name-cell .id { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .score-cell { font-family: 'Fraunces', serif; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .score-cell .pct { font-size: 12px; color: var(--text-muted); margin-left: 6px; }
+  .score-cell.high { color: var(--ok); }
+  .score-cell.mid  { color: var(--warn); }
+  .score-cell.low  { color: var(--err); }
+  .sec-bars { display: flex; gap: 4px; align-items: center; }
+  .sec-bar { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .sec-bar .bar { width: 28px; height: 28px; background: var(--line); position: relative; }
+  .sec-bar .bar .fill { position: absolute; bottom: 0; left: 0; right: 0; background: var(--accent); }
+  .sec-bar .bar .fill.low { background: var(--err); }
+  .sec-bar .bar .fill.mid { background: var(--warn); }
+  .sec-bar .k { font-size: 9px; color: var(--text-muted); letter-spacing: 0.1em; font-weight: 600; }
+
+  .empty { padding: 60px 20px; text-align: center; color: var(--text-dim); font-style: italic; font-family: 'Fraunces', serif; font-size: 17px; }
+
+  .row-actions { display: flex; gap: 6px; }
+  .icon-btn {
+    background: transparent; border: 1px solid transparent; color: var(--text-muted);
+    padding: 6px 8px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    transition: all 0.15s ease;
+  }
+  .icon-btn:hover { color: var(--accent); border-color: var(--line-2); }
+  .icon-btn.danger:hover { color: var(--err); border-color: var(--err); }
+
+  /* Modal (detail view) */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(6px); display: flex; align-items: flex-start; justify-content: center; z-index: 50; padding: 40px 20px; overflow-y: auto; }
+  .modal-overlay.hidden { display: none; }
+  .modal-lg { background: var(--surface); border: 1px solid var(--line-2); max-width: 900px; width: 100%; padding: 36px 40px; border-radius: 2px; }
+  .modal-lg .close-btn { float: right; background: transparent; border: 1px solid var(--line-2); color: var(--text-dim); padding: 6px 12px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; transition: all 0.15s ease; }
+  .modal-lg .close-btn:hover { color: var(--err); border-color: var(--err); }
+
+  .modal-hero { padding: 20px 0 30px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+  .modal-hero .kicker { color: var(--accent); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; }
+  .modal-hero h2 { font-family: 'Fraunces', serif; font-size: 40px; font-weight: 300; margin-top: 8px; }
+  .modal-hero .meta-line { color: var(--text-dim); font-size: 13px; margin-top: 10px; }
+  .modal-hero .meta-line strong { color: var(--text); font-weight: 500; }
+  .modal-hero .score-chip { display: inline-block; padding: 6px 14px; background: rgba(200,155,110,0.12); border: 1px solid var(--accent); color: var(--accent-2); font-family: 'Fraunces', serif; font-size: 20px; margin-top: 16px; }
+
+  .bd-row { display: grid; grid-template-columns: 220px 1fr 90px; gap: 18px; align-items: center; padding: 14px 16px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 2px; margin-bottom: 8px; }
+  .bd-name { font-family: 'Fraunces', serif; font-size: 15px; }
+  .bd-bar { height: 5px; background: var(--line); position: relative; overflow: hidden; }
+  .bd-bar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); transition: width 0.4s ease; }
+  .bd-bar .fill.low { background: var(--err); }
+  .bd-bar .fill.mid { background: var(--warn); }
+  .bd-num { text-align: right; font-family: 'Fraunces', serif; font-size: 15px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .bd-num strong { color: var(--text); font-weight: 500; }
+
+  .review-block { margin-top: 24px; }
+  .section-head { margin: 24px 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; }
+  .section-head h3 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 400; font-style: italic; }
+  .section-head .uppercase-label { text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.2em; color: var(--text-dim); font-weight: 500; }
+  .review-q { padding: 16px 18px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 2px; margin-bottom: 10px; }
+  .review-q .tag { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+  .review-q .tag.correct { color: var(--ok); }
+  .review-q .tag.wrong { color: var(--err); }
+  .review-q .tag.unanswered { color: var(--warn); }
+  .review-q h4 { font-family: 'Fraunces', serif; font-size: 15.5px; margin: 6px 0 12px; font-weight: 400; line-height: 1.35; }
+  .review-opts { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .review-opt { padding: 8px 12px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; line-height: 1.45; display: flex; gap: 12px; align-items: flex-start; }
+  .review-opt.correct { border-color: var(--ok); background: rgba(143,181,115,0.06); }
+  .review-opt.chosen-wrong { border-color: var(--err); background: rgba(208,122,122,0.06); }
+  .review-opt .ltr { font-family: 'Fraunces', serif; color: var(--text-muted); font-size: 12px; min-width: 16px; }
+  .review-opt.correct .ltr { color: var(--ok); }
+  .review-opt.chosen-wrong .ltr { color: var(--err); }
+  .explain { margin-top: 4px; padding: 10px 12px; background: rgba(200,155,110,0.05); border-left: 2px solid var(--accent); font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .explain strong { color: var(--text); font-weight: 500; }
+
+  .hidden { display: none !important; }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line-2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    table.assess th:nth-child(4), table.assess td:nth-child(4),
+    table.assess th:nth-child(5), table.assess td:nth-child(5) { display: none; }
+    .bd-row { grid-template-columns: 1fr; gap: 6px; }
+    .bd-num { text-align: left; }
+    .modal-lg { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="brandbar">
+    <div class="brand">
+      <div class="brand-mark">∞</div>
+      <div>
+        <div class="brand-name">Admin · Call Assessment</div>
+        <div class="brand-sub" id="authLabel">Checking session…</div>
+      </div>
+    </div>
+    <div id="brandRight"></div>
+  </div>
+
+  <!-- ============= LOGIN ============= -->
+  <section id="viewLogin" class="hidden">
+    <div class="login-wrap">
+      <h1>Sign in</h1>
+      <p>Administrator access only. Credentials are set via Railway environment variables.</p>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="loginUser" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPass" autocomplete="current-password" />
+      </div>
+      <div class="err-msg" id="loginErr"></div>
+      <button class="btn-primary full" id="btnLogin">Sign in</button>
+    </div>
+  </section>
+
+  <!-- ============= DASHBOARD ============= -->
+  <section id="viewDash" class="hidden">
+
+    <div class="stats">
+      <div class="stat"><div class="l">Total assessments</div><div class="v" id="statTotal">—</div></div>
+      <div class="stat"><div class="l">Average score</div><div class="v" id="statAvg">—<small>%</small></div></div>
+      <div class="stat"><div class="l">Passed (≥75%)</div><div class="v" id="statPass">—</div></div>
+      <div class="stat"><div class="l">Last 7 days</div><div class="v" id="statWeek">—</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search">
+        <input id="searchInput" type="text" placeholder="Search by name or ID…" />
+      </div>
+      <select id="dateFilter">
+        <option value="">All time</option>
+        <option value="today">Today</option>
+        <option value="week">Last 7 days</option>
+        <option value="month">Last 30 days</option>
+        <option value="90">Last 90 days</option>
+      </select>
+      <button class="btn-secondary" id="btnExport">Export CSV</button>
+    </div>
+
+    <div id="tableWrap">
+      <div class="empty"><span class="spinner"></span>Loading assessments…</div>
+    </div>
+
+  </section>
+
+</div>
+
+<!-- ============= DETAIL MODAL ============= -->
+<div class="modal-overlay hidden" id="detailModal">
+  <div class="modal-lg">
+    <button class="close-btn" id="closeDetail">Close</button>
+    <div id="detailBody">
+      <div class="empty"><span class="spinner"></span>Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fmtTime = (s) => { const m = Math.floor(s/60), sec = Math.round(s%60); return `${m}m ${sec}s`; };
+const letterFor = (i) => ['A','B','C','D','E'][i];
+function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function cls(pct){ return pct >= 0.8 ? 'high' : pct >= 0.6 ? 'mid' : 'low'; }
+function barCls(pct){ return pct >= 0.8 ? '' : pct >= 0.6 ? 'mid' : 'low'; }
+function fmtDate(s){ const d = new Date(s); return d.toLocaleString(undefined, { year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }); }
+
+/* =====================================================================
+   AUTH FLOW — on load, ask the server whether we're already authed
+   ===================================================================== */
+async function checkAuth() {
+  try {
+    const r = await fetch('/api/admin/status', { credentials: 'same-origin' });
+    const d = await r.json();
+    if (d.authenticated) showDash();
+    else showLogin();
+  } catch {
+    showLogin();
+  }
+}
+function showLogin() {
+  $('viewLogin').classList.remove('hidden');
+  $('viewDash').classList.add('hidden');
+  $('authLabel').textContent = 'Not signed in';
+  $('brandRight').innerHTML = '';
+  setTimeout(() => $('loginUser').focus(), 50);
+}
+function showDash() {
+  $('viewLogin').classList.add('hidden');
+  $('viewDash').classList.remove('hidden');
+  $('authLabel').textContent = 'Signed in';
+  $('brandRight').innerHTML = '<button class="btn-secondary" id="btnLogout">Sign out</button>';
+  $('btnLogout').addEventListener('click', logout);
+  loadDashboard();
+}
+
+$('btnLogin').addEventListener('click', login);
+[$('loginUser'), $('loginPass')].forEach((el) =>
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); })
+);
+
+async function login() {
+  const btn = $('btnLogin'); const err = $('loginErr');
+  err.textContent = ''; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Signing in…';
+  try {
+    const r = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ username: $('loginUser').value, password: $('loginPass').value }),
+    });
+    const d = await r.json();
+    if (!r.ok) { err.textContent = d.error || 'Login failed'; btn.disabled = false; btn.textContent = 'Sign in'; return; }
+    showDash();
+  } catch {
+    err.textContent = 'Network error';
+    btn.disabled = false; btn.textContent = 'Sign in';
+  }
+}
+async function logout() {
+  await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
+  showLogin();
+}
+
+/* =====================================================================
+   DASHBOARD
+   ===================================================================== */
+async function loadDashboard() {
+  await Promise.all([loadStats(), loadAssessments()]);
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch('/api/admin/stats', { credentials: 'same-origin' });
+    if (r.status === 401) { showLogin(); return; }
+    const d = await r.json();
+    $('statTotal').textContent = d.total;
+    $('statAvg').innerHTML = `${d.avg_pct}<small>%</small>`;
+    $('statPass').textContent = d.pass_count;
+    $('statWeek').textContent = d.this_week;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function dateFilterToParams() {
+  const v = $('dateFilter').value;
+  if (!v) return {};
+  const now = new Date();
+  let from;
+  if (v === 'today') { from = new Date(now); from.setHours(0,0,0,0); }
+  else if (v === 'week')  { from = new Date(now - 7*864e5); }
+  else if (v === 'month') { from = new Date(now - 30*864e5); }
+  else if (v === '90')    { from = new Date(now - 90*864e5); }
+  return from ? { from: from.toISOString() } : {};
+}
+
+let loadToken = 0;
+async function loadAssessments() {
+  const myToken = ++loadToken;
+  const wrap = $('tableWrap');
+  const params = new URLSearchParams();
+  const s = $('searchInput').value.trim();
+  if (s) params.set('search', s);
+  const df = dateFilterToParams();
+  if (df.from) params.set('from', df.from);
+  try {
+    const r = await fetch('/api/admin/assessments?' + params.toString(), { credentials: 'same-origin' });
+    if (r.status === 401) { showLogin(); return; }
+    const d = await r.json();
+    if (myToken !== loadToken) return; // stale response, a newer request is in flight
+    renderTable(d.assessments);
+  } catch (e) {
+    wrap.innerHTML = '<div class="empty">Failed to load assessments.</div>';
+  }
+}
+
+function renderTable(rows) {
+  const wrap = $('tableWrap');
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="empty">No assessments yet.</div>';
+    return;
+  }
+  const html = `
+    <table class="assess">
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Date</th>
+          <th>Score</th>
+          <th>By section (A · B · C · D)</th>
+          <th>Duration</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(rowHtml).join('')}
+      </tbody>
+    </table>`;
+  wrap.innerHTML = html;
+  // Wire up row click + delete
+  wrap.querySelectorAll('tbody tr').forEach((tr) => {
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('.row-actions')) return;
+      openDetail(tr.dataset.id);
+    });
+  });
+  wrap.querySelectorAll('.btn-del').forEach((b) => {
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = b.dataset.id;
+      const name = b.dataset.name;
+      if (!confirm(`Delete assessment for ${name}? This cannot be undone.`)) return;
+      await fetch(`/api/admin/assessments/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+      loadDashboard();
+    });
+  });
+}
+
+function rowHtml(r) {
+  const pct = r.total_questions ? r.correct_count / r.total_questions : 0;
+  const pctLbl = (pct*100).toFixed(0);
+  const ss = r.section_scores || {};
+  const secs = ['A','B','C','D'].map((k) => {
+    const sc = ss[k] || { correct: 0, total: 0 };
+    const p = sc.total ? sc.correct / sc.total : 0;
+    return `<div class="sec-bar"><div class="bar"><div class="fill ${barCls(p)}" style="height:${Math.round(p*100)}%"></div></div><div class="k">${k}</div></div>`;
+  }).join('');
+  const ta = r.time_expired ? ' · <span style="color:var(--warn)">timed out</span>' : '';
+  return `
+    <tr data-id="${r.id}">
+      <td class="name-cell">
+        <div class="name">${escapeHtml(r.candidate_name)}</div>
+        ${r.candidate_id ? `<div class="id">${escapeHtml(r.candidate_id)}</div>` : ''}
+      </td>
+      <td>${escapeHtml(fmtDate(r.submitted_at))}</td>
+      <td class="score-cell ${cls(pct)}">${r.correct_count}/${r.total_questions}<span class="pct">${pctLbl}%</span></td>
+      <td><div class="sec-bars">${secs}</div></td>
+      <td>${fmtTime(r.duration_seconds)}${ta}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" data-action="view">View</button>
+          <button class="icon-btn danger btn-del" data-id="${r.id}" data-name="${escapeHtml(r.candidate_name)}">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+}
+
+/* Debounced search */
+let searchTimer;
+$('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(loadAssessments, 250);
+});
+$('dateFilter').addEventListener('change', loadAssessments);
+
+$('btnExport').addEventListener('click', () => {
+  const params = new URLSearchParams();
+  const s = $('searchInput').value.trim();
+  if (s) params.set('search', s);
+  const df = dateFilterToParams();
+  if (df.from) params.set('from', df.from);
+  window.location.href = '/api/admin/export.csv?' + params.toString();
+});
+
+/* =====================================================================
+   DETAIL MODAL
+   ===================================================================== */
+async function openDetail(id) {
+  const m = $('detailModal'); m.classList.remove('hidden');
+  $('detailBody').innerHTML = '<div class="empty"><span class="spinner"></span>Loading…</div>';
+  try {
+    const r = await fetch(`/api/admin/assessments/${id}`, { credentials: 'same-origin' });
+    if (r.status === 401) { closeDetail(); showLogin(); return; }
+    const d = await r.json();
+    renderDetail(d);
+  } catch {
+    $('detailBody').innerHTML = '<div class="empty">Failed to load.</div>';
+  }
+}
+function closeDetail() { $('detailModal').classList.add('hidden'); }
+$('closeDetail').addEventListener('click', closeDetail);
+$('detailModal').addEventListener('click', (e) => { if (e.target === $('detailModal')) closeDetail(); });
+
+function renderDetail({ assessment: a, sections }) {
+  const pct = a.total_questions ? a.correct_count / a.total_questions : 0;
+  const pctLbl = (pct*100).toFixed(0);
+
+  const verdict = pct >= 0.9 ? 'Elite phone performance.'
+    : pct >= 0.8 ? 'Strong phone skills.'
+    : pct >= 0.7 ? 'Competent, with specific gaps.'
+    : pct >= 0.5 ? 'Significant coaching needed.'
+    : 'Not yet ready for inbound calls.';
+
+  const bd = sections.map((sec) => {
+    const sc = (a.section_scores || {})[sec.key] || { correct: 0, total: 0 };
+    const p = sc.total ? sc.correct / sc.total : 0;
+    return `<div class="bd-row">
+      <div class="bd-name">${escapeHtml(sec.name)}</div>
+      <div class="bd-bar"><div class="fill ${barCls(p)}" style="width:${Math.round(p*100)}%"></div></div>
+      <div class="bd-num"><strong>${sc.correct}</strong>/${sc.total}</div>
+    </div>`;
+  }).join('');
+
+  const review = sections.map((sec) => {
+    const inSection = (a.scored_answers || []).filter((q) => q.section === sec.key);
+    const correctCt = inSection.filter((q) => q.isCorrect).length;
+    const head = `<div class="section-head"><h3>${escapeHtml(sec.name)}</h3><div class="uppercase-label">${correctCt}/${inSection.length} correct</div></div>`;
+    const items = inSection.map((q) => {
+      const tagClass = q.isCorrect ? 'correct' : q.answered === null ? 'unanswered' : 'wrong';
+      const tagText = q.isCorrect ? '✓ Correct' : q.answered === null ? '— Unanswered' : '✗ Incorrect';
+      const opts = q.options.map((text, idx) => {
+        let klass = '';
+        if (idx === q.correct) klass = 'correct';
+        else if (idx === q.answered && q.answered !== q.correct) klass = 'chosen-wrong';
+        const suffix = idx === q.answered ? '<span style="color:var(--text-muted);font-size:11px;"> · their answer</span>'
+                      : idx === q.correct ? '<span style="color:var(--ok);font-size:11px;"> · correct answer</span>' : '';
+        return `<div class="review-opt ${klass}"><div class="ltr">${letterFor(idx)}</div><div>${escapeHtml(text)}${suffix}</div></div>`;
+      }).join('');
+      return `<div class="review-q">
+        <div class="tag ${tagClass}">Q${q.idx+1} · Section ${q.section} · ${tagText}</div>
+        <h4>${escapeHtml(q.question)}</h4>
+        <div class="review-opts">${opts}</div>
+        <div class="explain"><strong>Why:</strong> ${escapeHtml(q.why)}</div>
+      </div>`;
+    }).join('');
+    return head + items;
+  }).join('');
+
+  const timedOut = a.time_expired ? ' · <span style="color:var(--warn);">Timed out</span>' : '';
+
+  $('detailBody').innerHTML = `
+    <div class="modal-hero">
+      <div class="kicker">Submission #${a.id}</div>
+      <h2>${escapeHtml(a.candidate_name)}</h2>
+      <div class="meta-line">
+        ${a.candidate_id ? `ID: <strong>${escapeHtml(a.candidate_id)}</strong> · ` : ''}
+        ${escapeHtml(fmtDate(a.submitted_at))} · Duration: <strong>${fmtTime(a.duration_seconds)}</strong>${timedOut}
+      </div>
+      <div class="score-chip">${a.correct_count} / ${a.total_questions} · ${pctLbl}% · ${escapeHtml(verdict)}</div>
+    </div>
+
+    <h3 style="font-family: Fraunces, serif; font-weight: 400; font-size: 19px; margin-bottom: 12px; font-style: italic;">Section breakdown</h3>
+    ${bd}
+
+    <div class="review-block">
+      <h3 style="font-family: Fraunces, serif; font-weight: 400; font-size: 19px; font-style: italic;">Full review</h3>
+      ${review}
+    </div>`;
+  $('detailModal').scrollTop = 0;
+}
+
+// kick off
+checkAuth();
+</script>
+</body>
+</html>
